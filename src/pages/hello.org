@@ -1,0 +1,6 @@
+:PROPERTIES:
+:title: Hello World
+:END:
+
+* Hello World
+It's nice to see you today.
