@@ -10,6 +10,7 @@ import { visit } from "unist-util-visit";
 import { visitIds } from "orgast-util-visit-ids";
 import { uniorgAttach } from "uniorg-attach";
 import orgSmartypants from "./reorg-smartypants";
+import rehypeStringify from "rehype-stringify";
 
 const processor = process()
   .use(orgParse)
@@ -19,7 +20,8 @@ const processor = process()
   .use(uniorgAttach, { idDir: "/.attach" })
   .use(extractIds)
   .use(orgSmartypants as Plugin<any>, { dashes: "oldschool" })
-  .use(org2rehype);
+  .use(org2rehype)
+  .use(rehypeStringify);
 
 export default async function orgToHtml(file) {
   try {

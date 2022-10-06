@@ -2,6 +2,8 @@ import { PluggableList } from "@mdx-js/mdx/lib/core.js";
 import type { AstroIntegration } from "astro";
 import { VFile } from "vfile";
 import type { Plugin as VitePlugin } from "vite";
+
+import render from "./render";
 import orgToHtml from "./orgToHtml";
 
 export type OrgOptions = {
@@ -9,36 +11,38 @@ export type OrgOptions = {
   rehypePlugins?: PluggableList;
 };
 
-export default function org(orgOptions: OrgOptions = {}): AstroIntegration {
+export default function reorg(orgOptions: OrgOptions = {}): AstroIntegration {
   return {
     name: "@reorg/astro",
     hooks: {
       "astro:config:setup": async ({
         updateConfig,
-        // config,
+        config,
         addPageExtension,
-      }: // command,
-      any) => {
+      }: any) => {
         addPageExtension(".org");
-
-        // let importMetaEnv: Record<string, any> = {
-        //   SITE: config.site,
-        // };
+        let importMetaEnv: Record<string, any> = {
+          SITE: config.site,
+        };
 
         updateConfig({
           vite: {
             plugins: [
               {
-                name: "reorg/astro",
+                name: "astro:orgmode",
                 enforce: "pre",
                 async transform(code, id) {
                   if (!id.endsWith(".org")) return;
                   const compiled = await orgToHtml(
                     new VFile({ value: code, path: id })
                   );
-                  console.log(String(compiled.result));
+                  console.log(compiled);
+                  const layout = compiled.data.properties?.layout || "Layout";
+                  const frontmatter = { ...compiled.data, layout };
+                  const rendered = render(compiled.value);
+                  console.log(rendered);
                   return {
-                    code: String(compiled.result),
+                    code: rendered,
                     map: null,
                   };
                 },
